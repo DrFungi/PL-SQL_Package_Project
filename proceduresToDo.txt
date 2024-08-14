@@ -1,0 +1,23 @@
+Cas qui arrivent au labo:
+
+coté requestor
+
+1. Demande de changement de date de résultat
+2. Faire une demande de changement de strain type
+3. Ajouter un test pour un échantillon déjà demandé
+4. Connaitre le statut d´un test
+5. Annuler un test déjà demandé
+6. Chercher des résutats d'un test
+
+
+
+coté technicien
+
+1. Changer le résultat d'un test
+2. Rechercher les tests à faire pour la journée
+	2.1. Rechercher les tests de chimie
+	2.2. Rechercher les tests de micro
+3. Entrer les résultats des test (Ajouter des enrregistrements)
+
+
+

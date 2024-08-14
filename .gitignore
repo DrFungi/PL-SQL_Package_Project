@@ -1,0 +1,15 @@
+# file to ignore because it had mistakes
+
+
+deprecated_LallemandDB 1.sql
+
+# Folders to ignore
+
+Tp du cours_B08/
+labSpreadsheetsBenchling/
+
+# Other files to ignore
+
+*.csv
+hajar.proc
+*.docx
