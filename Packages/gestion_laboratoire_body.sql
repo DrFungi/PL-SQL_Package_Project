@@ -2,13 +2,13 @@ create or replace PACKAGE BODY GESTION_LABORATOIRE AS
     
 /*
 The objective of this procedure is that the lab manager can search how many
-samples and which samples a technician has done in a given period of time.
+samples and which samples a technician has done in a given period.
 It takes in the employee name, start date, and end date as parameters; and
 it retrieves the number of samples made as well as a list with all the details
 from each test.
 
-Lab suppervisor must provide employee name and dates in a specific format
-the procedure will supply an integer with the amount of samples made and the
+Lab supervisor must provide employee name and dates in a specific format
+the procedure will supply an integer with the number of samples made and the
 details of each sample in a cursor
 */
   PROCEDURE CHERCHER_TESTS_FAIT_PAR_TECH  
@@ -44,14 +44,18 @@ details of each sample in a cursor
     and receivedon between p_starting_date and p_ending_date;
   end if;   
   END CHERCHER_TESTS_FAIT_PAR_TECH;
+
 --place pour mettre la prochaine procedure
--- procedure chercher resultat d'un test à partir de id echantillon et id test avec exceptions
-/*La procédure "CHERCHER_RESULTAT_TEST" recherche le résultat d'un test pour un échantillon donné.
- Elle valide d'abord les identifiants de l'échantillon et du test, puis vérifie leur existence dans la base de données.
- Si les identifiants sont valides et les enregistrements existent, elle récupère le résultat du test correspondant. 
- Si un résultat est trouvé, il est renvoyé avec un indicateur de son existence. 
- Sinon, un message d'erreur approprié est levé. En résumé, cette procédure gère la récupération des résultats de test tout en traitant 
- les cas d'invalidité des identifiants ou d'absence de résultats.*/
+
+--Procedure to search for a test result using sample ID and test ID with exceptions
+
+/*The procedure "CHERCHER_RESULTAT_TEST" searches for the result of a test for a given sample. 
+It first validates the sample and test IDs and then checks their existence in the database. 
+If the IDs are valid and the records exist, it retrieves the corresponding test result. 
+If a result is found, it is returned along with an indicator of its existence. Otherwise, 
+an appropriate error message is raised. In summary, this procedure handles the retrieval of test 
+results while managing cases of invalid IDs or the absence of results.*/
+
 PROCEDURE CHERCHER_RESULTAT_TEST
 ( 
     p_SampleID IN Result.Sample_ID%TYPE,
@@ -64,21 +68,21 @@ IS
    v_test_id_validation BOOLEAN;
    v_nbRes NUMBER;
 BEGIN
-   -- Valider l'identifiant de l'échantillon et du test
+   -- Valider l'identifiant de l'Ã©chantillon et du test
    v_sample_id_validation := validate_sample_id(p_SampleID);
    v_test_id_validation := validate_test_id(p_TestID);
    
-   -- Vérifier si l'échantillon et le test existent
+   -- VÃ©rifier si l'Ã©chantillon et le test existent
    IF (v_sample_id_validation) THEN
         IF (v_test_id_validation) THEN
-            -- Vérifier si le résultat existe 
+            -- VÃ©rifier si le rÃ©sultat existe 
             SELECT COUNT(*) INTO v_nbRes
             FROM Result
             WHERE Sample_id = p_SampleID
             AND test_id = p_TestID;
 
             IF v_nbRes > 0 THEN
-                -- Le résultat existe, on le récupère dans p_Result
+                -- Le rÃ©sultat existe, on le rÃ©cupÃ¨re dans p_Result
                 SELECT Valeur INTO p_Result
                 FROM Result
                 WHERE Sample_id = p_SampleID
@@ -86,26 +90,29 @@ BEGIN
 
                 p_ResultExists := TRUE;
             ELSE
-                -- Le résultat n'existe pas
+                -- Le rÃ©sultat n'existe pas
                 p_Result := NULL;
                 p_ResultExists := FALSE;
-                RAISE_APPLICATION_ERROR (-20001,'Résultat non disponible');
+                RAISE_APPLICATION_ERROR (-20001,'RÃ©sultat non disponible');
             END IF;
         ELSE
-            RAISE_APPLICATION_ERROR(-20102, 'Test non trouvé');
+            RAISE_APPLICATION_ERROR(-20102, 'Test non trouvÃ©');
         END IF;
     else
-    raise_application_error(-20101, 'Echantillon non trouvé');
+    raise_application_error(-20101, 'Echantillon non trouvÃ©');
   end if;
 END CHERCHER_RESULTAT_TEST;
 
--- procedure chercher statut d'un test avec exceptions 
-/*La procédure "CHECK_TEST_STATUS" valide d'abord les identifiants d'un échantillon et d'un test. 
-Ensuite, elle récupère les dates de réception et d'approbation de l'échantillon dans la table "sample" et "result". 
-En fonction de ces dates, elle détermine le statut du test : "Échantillon non reçu", "Échantillon non approuvé" ou "Approuvé après réception".
-Enfin, elle incrémente le compteur du nombre de fois que ce test, échantillon et statut ont été vérifiés dans une table de statistiques.
-En résumé, cette procédure fournit un aperçu du statut d'un test pour un échantillon donné et maintient un suivi du nombre de vérifications
-effectuées pour chaque combinaison de test, échantillon et statut.*/
+--Procedure to check the status of a test with exceptions
+
+/*The procedure "CHECK_TEST_STATUS" first validates the IDs of a sample and a test. 
+It then retrieves the reception and approval dates of the sample from the "sample" and "result" tables. 
+Based on these dates, it determines the status of the test: "Sample not received," "Sample not approved," 
+or "Approved after reception." Finally, it increments the counter that tracks how many times this test, sample, 
+and status have been checked in a statistics table. In summary, this procedure provides an overview of the status 
+of a test for a given sample and keeps track of the number of checks performed for each combination of test, sample, and status.*/
+
+
  PROCEDURE CHECK_TEST_STATUS (
     p_SampleID IN Sample.Sample_ID%TYPE,
     p_TestID IN Sample.test_id%TYPE,
@@ -120,11 +127,11 @@ BEGIN
    v_test_id_validation := validate_test_id(p_TestID);
 
     IF NOT (v_sample_id_validation) THEN
-        RAISE_APPLICATION_ERROR(-20101, 'Echantillon non trouvé');
+        RAISE_APPLICATION_ERROR(-20101, 'Echantillon non trouvÃ©');
     ELSIF NOT (v_test_id_validation) THEN
-        RAISE_APPLICATION_ERROR(-20102, 'Test non trouvé');
+        RAISE_APPLICATION_ERROR(-20102, 'Test non trouvÃ©');
     ELSIF (v_sample_id_validation) AND (v_test_id_validation) THEN
-    -- Récupérer les dates de réception et d'approbation pour l'échantillon donné
+    -- RÃ©cupÃ©rer les dates de rÃ©ception et d'approbation pour l'Ã©chantillon donnÃ©
         SELECT s.RECEIVEDON, s.approvedon
         INTO v_date_reception, v_date_approbation
         FROM sample s
@@ -132,17 +139,17 @@ BEGIN
         WHERE s.sample_id = p_SampleID
         AND r.test_id = p_TestID;
     
-    -- Vérifier le statut en fonction des dates
+    -- VÃ©rifier le statut en fonction des dates
     IF v_date_reception IS NULL THEN
-        p_statut := 'Échantillon non reçu';
+        p_statut := 'Ã‰chantillon non reÃ§u';
     ELSIF v_date_approbation IS NULL THEN
-        p_statut := 'Échantillon non approuvé';
+        p_statut := 'Ã‰chantillon non approuvÃ©';
     ELSIF v_date_approbation > v_date_reception THEN
-        p_statut := 'Approuvé après réception';
+        p_statut := 'ApprouvÃ© aprÃ¨s rÃ©ception';
     END IF;
 	END IF;
 
-    -- Incrémenter le compteur du nombre de fois que ce test_id, sample_id et statut sont vérifiés
+    -- IncrÃ©menter le compteur du nombre de fois que ce test_id, sample_id et statut sont vÃ©rifiÃ©s
    UPDATE TEST_STATUS_CHECK_STATS
     SET status_checked_count = status_checked_count + 1
     WHERE test_id = p_TestID
@@ -160,9 +167,9 @@ There are 3 verifications as follows:
   . if the test exists
   . if the test exists for that particular sample
 Then there is a log into the updated result table which contains the sample number, the
-technician, the date, the old result and the new result
+technician, the date, the old result, and the new result
 
-This procedure takes in the sample number, tech name, test name.
+This procedure takes in the sample number, tech name, and test name.
 calls several verification functions and takes out a number/message to let 
 the person know that the change has been made
 */
@@ -249,8 +256,9 @@ END UPDATE_TEST_RESULT;
 
 ------ next procedure
 /*To efficiently manage the analysis of samples that exceed their scheduled 
-  delivery dates, we have implemented this procedure which guarantees 
-  identification of all analyzes late between two dates.*/
+  delivery dates, this procedure has been implemented which guarantees 
+  the identification of all late analyses between two dates.*/
+
 PROCEDURE EXPECTED_DATE_NOT_RESPECTED (
     p_Date_Debut IN DATE,
     p_Date_Fin IN DATE,
@@ -268,9 +276,10 @@ BEGIN
 END EXPECTED_DATE_NOT_RESPECTED;
 ------ next procedure
 
-/*Non-conforming test results are a results that deviate from the standards, specifications, 
-  or expectations defined by the requester. So this procedure give me all records of result 
-  out of range EXPECTED_MIN and EXPECTED_MAX between tow dates.*/
+/*Non-conforming test results are results that deviate from the standards, specifications, 
+  or expectations defined by the requester. So this procedure reports all records of results 
+  out of range EXPECTED_MIN and EXPECTED_MAX between two dates.*/
+
 PROCEDURE RESULT_NOT_CONFORM (
     p_Date_Debut IN DATE,
     p_Date_Fin IN DATE,
